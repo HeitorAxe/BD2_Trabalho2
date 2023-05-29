@@ -4,7 +4,7 @@ import psycopg2
 # Scrips desenvolvidos para o projeto
 from scripts.db_config import db_config
 from scripts.load_database import load_database
-from scripts.log_redo import recover
+from scripts.recovery import recover
 
 def main():
   conn = None
