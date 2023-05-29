@@ -3,7 +3,7 @@
 
 **Repositório Usado Como Base: https://github.com/letyrsl/trabalho-log-bd2**
 
-O objetivo desse trabalho de Banco de Dados II é implementar o mecanismo de log Redo e Undo sem checkpoint usando o SGBD.
+O objetivo desse trabalho de Banco de Dados II é implementar o mecanismo de log Redo e Undo sem checkpoint.
 
 ## Para rodar
 - É necessário ter instaladas as seguintes dependências:
