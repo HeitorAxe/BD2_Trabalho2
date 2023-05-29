@@ -11,6 +11,10 @@ from scripts.print_out import print_redo_transactions, print_undo_transactions, 
   # Retorna transações do último checkpoint, se não tiver retorna array vazio
   return matches[-1].split(',') if matches else [] """
 
+#def dump_log(file, cursor, committed_transactions):
+
+
+
 def find_committed_transactions(file):
   transactions = []
 
@@ -71,7 +75,7 @@ def restore_changes(file, cursor, committed_transactions):
         # Cria um array com os valores informados no arquivo de log
         values = matches.group(1).split(',')
 
-        # Retorna a coluna da tupla com o ID informado no arquivo
+        #Retorna a coluna da tupla com o ID informado no arquivo
         cursor.execute('SELECT ' + values[1] + ' FROM data WHERE id = ' + values[0])
         tuple = cursor.fetchone()[0]
 
@@ -79,6 +83,50 @@ def restore_changes(file, cursor, committed_transactions):
         if(int(values[3]) != tuple):
           cursor.execute('UPDATE data SET ' + values[1] + ' = ' + values[3] + ' WHERE id = ' + values[0])
           print_update(transaction, tuple, values)
+
+def intersection(lst1, lst2):
+    lst3 = [value for value in lst1 if value not in lst2]
+    return lst3
+
+def undo_changes(file, cursor, committed_transactions, started_transactions):
+  uncommitted_transactions = intersection(started_transactions, committed_transactions)
+  # Percorre transações commitadas
+  for transaction in uncommitted_transactions:
+    print(transaction)
+    # Retorna pra início do arquivo
+    file.seek(0)
+
+    # Vai para o início da transação
+    content = file.read()
+    start_transaction = content.index('<start '+ transaction +'>')
+    file.seek(start_transaction)
+
+    # Percorre arquivo do start da transição até o final
+    for line in reversed(list(file)):
+
+      #original
+      #if('<start '+ transaction +'>' in line): break;
+
+      # Quando chegar no commit da transição, para
+      #if ('<commit '+ transaction +'>' in line): break
+
+      matches = re.search('<'+ transaction +',(.+?)>', line)
+      # Se for log da transação, atualiza no banco
+      if matches:
+        print(line)
+        # Cria um array com os valores informados no arquivo de log
+        values = matches.group(1).split(',')
+
+        #Retorna a coluna da tupla com o ID informado no arquivo
+        cursor.execute('SELECT ' + values[1] + ' FROM data WHERE id = ' + values[0])
+        #valor da coluna da tupla no disco
+        tuple = cursor.fetchone()[0]
+
+        # Confere se o valor da antigo da coluna é diferente do que tem no banco
+        #if(int(values[2]) != tuple):
+        cursor.execute('UPDATE data SET ' + values[1] + ' = ' + values[2] + ' WHERE id = ' + values[0])
+        print_update(transaction, tuple, values)
+
 
 
 def log_redo(cursor):
@@ -93,12 +141,13 @@ def log_redo(cursor):
     committed_transactions = find_committed_transactions(file)
 
     # Restaurar mudanças feitas nas transições committadas
-    restore_changes(file, cursor, committed_transactions)
+    undo_changes(file, cursor, committed_transactions, started_transactions)
+    #restore_changes(file, cursor, committed_transactions)
 
     # Imprime saída
     #mudei isso pra receber commited transaction ao invés de checpoint ajeitar depois a função
-    print_redo_transactions(started_transactions, committed_transactions)
-    print_undo_transactions(started_transactions, committed_transactions)
+    #print_redo_transactions(started_transactions, committed_transactions)
+    #print_undo_transactions(started_transactions, committed_transactions)
 
     print_json(cursor)
 
