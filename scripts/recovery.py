@@ -154,7 +154,9 @@ def recover(cursor):
     #print_redo_transactions(started_transactions, committed_transactions)
     #print_undo_transactions(started_transactions, committed_transactions)
 
-    #print_json(cursor)
+    print("")
+    print("Estado Atual dos Dados:")
+    print_json(cursor)
 
   finally:
     # Fecha arquivo
